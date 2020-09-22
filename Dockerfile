@@ -22,7 +22,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # Install "curl", "libmemcached-dev", "libpq-dev", "libjpeg-dev",
 #         "libpng-dev", "libfreetype6-dev", "libssl-dev", "libmcrypt-dev",
 RUN set -eux; \
-    apt-get update; \
+    apt-get update -y; \
     apt-get upgrade -y; \
     apt-get install -y --no-install-recommends \
             curl \
