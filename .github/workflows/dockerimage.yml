@@ -1,33 +1,93 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches: master
-  schedule:
-  - cron: 0 0 * * 6
+    push:
+        branches: helldar
+        tags:
+            - v*
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php_version: [56, 70, 71, 72, 73, 74]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      env:
-        PHP_VERSION: ${{ matrix.php_version }}
-      run: |
-        export TAG_VERSION=${PHP_VERSION:0:1}.${PHP_VERSION:1:1}
-        docker build . --file Dockerfile-${{ matrix.php_version }} --tag laradock/php-fpm:latest-${TAG_VERSION}      
-        docker image ls
+    build:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                php_version: [ 7.2.33, 7.3.22, 7.4.10 ]
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v2
+            -   name: Get the version
+                id: get_version
+                run: |
+                    PREFIX=edge-
+                    TAG=""
 
-    - name: Push image to Docker hub
-      if: success()
-      env:
-        PHP_VERSION: ${{ matrix.php_version }}
-      run: |
-        export TAG_VERSION=${PHP_VERSION:0:1}.${PHP_VERSION:1:1}
-        echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USER }} --password-stdin
-        docker push laradock/php-fpm:latest-${TAG_VERSION}
-        docker logout
+                    if [[ $GITHUB_REF == refs/tags/* ]]; then
+                        PREFIX=latest-
+                        TAG=${GITHUB_REF/refs\/tags\/v}
+                    fi
+
+                    echo ::set-output name=prefix::${PREFIX}
+                    echo ::set-output name=tag::${TAG}
+            -   name: Prepare
+                id: prepare
+                env:
+                    PHP_VERSION: ${{ matrix.php_version }}
+                run: |
+                    DOCKER_IMAGE=laraberries/workspace
+                    DOCKER_PLATFORMS=linux/amd64,linux/arm,linux/arm64
+                    VERSION=${PHP_VERSION:0:1}.${PHP_VERSION:2:1}
+                    VERSION_PATCH=${PHP_VERSION}
+
+                    echo ::set-output name=docker_image::${DOCKER_IMAGE}
+                    echo ::set-output name=version::${VERSION}
+                    echo ::set-output name=version_patch::${VERSION_PATCH}
+
+                    echo ::set-output name=buildx_args_latest::--platform ${DOCKER_PLATFORMS} \
+                        --build-arg VERSION=${{ steps.get_version.outputs.prefix }}${VERSION} \
+                        --build-arg PHP_VERSION=${VERSION} \
+                        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+                        --build-arg VCS_REF=${GITHUB_SHA::8} \
+                        --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.prefix }}${VERSION}" .
+                    echo ::set-output name=buildx_args_tag::--platform ${DOCKER_PLATFORMS} \
+                        --build-arg VERSION=${VERSION} \
+                        --build-arg PHP_VERSION=${VERSION} \
+                        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+                        --build-arg VCS_REF=${GITHUB_SHA::8} \
+                        --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.tag }}-${VERSION}" .
+                    echo ::set-output name=buildx_args_tag_patch::--platform ${DOCKER_PLATFORMS} \
+                        --build-arg VERSION=${VERSION_PATCH} \
+                        --build-arg PHP_VERSION=${VERSION_PATCH} \
+                        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+                        --build-arg VCS_REF=${GITHUB_SHA::8} \
+                        --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.tag }}-${VERSION_PATCH}" .
+            -   name: Set up Docker Buildx
+                uses: crazy-max/ghaction-docker-buildx@v3
+            -   name: Docker Buildx (build latest)
+                run: docker buildx build --output "type=image,push=false,name=${{ steps.get_version.outputs.prefix }}${{ steps.prepare.outputs.version }}" ${{ steps.prepare.outputs.buildx_args_latest }}
+            -   name: Docker Buildx (build tag)
+                if: success() && steps.get_version.outputs.tag != ''
+                run: |
+                    docker buildx build --output "type=image,push=false,name=${{ steps.get_version.outputs.tag }}-${{ steps.prepare.outputs.version }}" ${{ steps.prepare.outputs.buildx_args_tag }}
+                    docker buildx build --output "type=image,push=false,name=${{ steps.get_version.outputs.tag }}-${{ steps.prepare.outputs.version_patch }}" ${{ steps.prepare.outputs.buildx_args_tag_patch }}
+            -   name: Login to DockerHub
+                if: success()
+                uses: docker/login-action@v1
+                with:
+                    username: ${{ secrets.DOCKER_HUB_USER }}
+                    password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+            -   name: Docker Buildx (push latest)
+                if: success()
+                run: docker buildx build --output "type=image,push=true,name=${{ steps.get_version.outputs.prefix }}${{ steps.prepare.outputs.version }}" ${{ steps.prepare.outputs.buildx_args_latest }}
+            -   name: Docker Buildx (push tag)
+                if: success() && steps.get_version.outputs.tag != ''
+                run: |
+                    docker buildx build --output "type=image,push=true,name=${{ steps.get_version.outputs.tag }}-${{ steps.prepare.outputs.version }}" ${{ steps.prepare.outputs.buildx_args_tag }}
+                    docker buildx build --output "type=image,push=true,name=${{ steps.get_version.outputs.tag }}-${{ steps.prepare.outputs.version_patch }}" ${{ steps.prepare.outputs.buildx_args_tag_patch }}
+            -   name: Inspect latest image
+                if: success()
+                run: docker buildx imagetools inspect ${{ steps.prepare.outputs.docker_image }}:${{ steps.get_version.outputs.prefix }}${{ steps.prepare.outputs.version }}
+            -   name: Inspect tagged image
+                if: success() && steps.prepare.outputs.tag != ''
+                run: |
+                    docker buildx imagetools inspect ${{ steps.prepare.outputs.docker_image }}:${{ steps.get_version.outputs.tag }}-${{ steps.prepare.outputs.version }}
+                    docker buildx imagetools inspect ${{ steps.prepare.outputs.docker_image }}:${{ steps.get_version.outputs.tag }}-${{ steps.prepare.outputs.version_patch }}

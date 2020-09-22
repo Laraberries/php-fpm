@@ -4,9 +4,9 @@
 #--------------------------------------------------------------------------
 #
 
-FROM php:7.3-fpm
+ARG PHP_VERSION=7.4
 
-LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
+FROM php:${PHP_VERSION}-fpm
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
@@ -33,17 +33,19 @@ RUN set -eux; \
             libpng-dev \
             libfreetype6-dev \
             libssl-dev \
-            libmcrypt-dev; \
+            libmcrypt-dev \
+            libonig-dev; \
     rm -rf /var/lib/apt/lists/*
 
-RUN set -eux; \ 
+RUN set -eux; \
     # Install the PHP pdo_mysql extention
     docker-php-ext-install pdo_mysql; \
     # Install the PHP pdo_pgsql extention
     docker-php-ext-install pdo_pgsql; \
     # Install the PHP gd library
     docker-php-ext-configure gd \
-            --with-jpeg-dir=/usr/lib \
-            --with-freetype-dir=/usr/include/freetype2; \
+            --prefix=/usr \
+            --with-jpeg \
+            --with-freetype; \
     docker-php-ext-install gd; \
     php -r 'var_dump(gd_info());'
