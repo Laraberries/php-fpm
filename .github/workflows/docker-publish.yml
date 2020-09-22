@@ -33,7 +33,7 @@ jobs:
                 env:
                     PHP_VERSION: ${{ matrix.php_version }}
                 run: |
-                    DOCKER_IMAGE=laraberries/php-fpm
+                    DOCKER_IMAGE=${GITHUB_REPOSITORY,,}
                     DOCKER_PLATFORMS=linux/amd64,linux/arm,linux/arm64
                     VERSION=${PHP_VERSION:0:1}.${PHP_VERSION:2:1}
 
