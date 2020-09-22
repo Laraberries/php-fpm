@@ -38,8 +38,8 @@ RUN set -eux; \
             libmcrypt-dev;
 
 RUN if [ ${PHP_VERSION} = "7.4" ]; then \
-    apt-get install -y --no-install-recommends libonig-dev;
-fi
+        apt-get install -y --no-install-recommends libonig-dev \
+    ;fi
 
 RUN rm -rf /var/lib/apt/lists/*
 
