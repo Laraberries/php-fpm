@@ -36,7 +36,9 @@ RUN set -eux; \
             libfreetype6-dev \
             libssl-dev \
             libmcrypt-dev \
-            libonig-dev; \
+            if [ ${PHP_VERSION} = "7.4" ]; then \
+                libonig-dev; \
+            fi && \
     rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \
@@ -52,9 +54,8 @@ RUN set -eux; \
             --with-freetype; \
     else \
         docker-php-ext-configure gd \
-            --prefix=/usr \
-            --with-jpeg-dir \
-            --with-freetype-dir; \
+            --with-jpeg-dir=/usr/lib \
+            --with-freetype-dir=/usr/include/freetype2; \
     fi && \
     docker-php-ext-install gd; \
     php -r 'var_dump(gd_info());'
