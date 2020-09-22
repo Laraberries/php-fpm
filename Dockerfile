@@ -59,5 +59,4 @@ RUN set -eux; \
             --with-jpeg-dir=/usr/lib \
             --with-freetype-dir=/usr/include/freetype2; \
     fi && \
-    docker-php-ext-install gd; \
-    php -r 'var_dump(gd_info());'
+    docker-php-ext-install gd;
