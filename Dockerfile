@@ -35,7 +35,7 @@ RUN set -eux; \
             libpng-dev \
             libfreetype6-dev \
             libssl-dev \
-            libmcrypt-dev \
+            libmcrypt-dev && \
             if [ ${PHP_VERSION} = "7.4" ]; then \
                 libonig-dev; \
             fi && \
