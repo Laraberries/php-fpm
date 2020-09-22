@@ -11,6 +11,8 @@ FROM php:${PHP_VERSION}-fpm
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
 
+ARG PHP_VERSION=7.4
+
 #
 #--------------------------------------------------------------------------
 # Software's Installation
@@ -41,11 +43,18 @@ RUN set -eux; \
     # Install the PHP pdo_mysql extention
     docker-php-ext-install pdo_mysql; \
     # Install the PHP pdo_pgsql extention
-    docker-php-ext-install pdo_pgsql; \
+    docker-php-ext-install pdo_pgsql && \
     # Install the PHP gd library
-    docker-php-ext-configure gd \
+    if [ ${PHP_VERSION} = "7.4" ]; then \
+        docker-php-ext-configure gd \
             --prefix=/usr \
             --with-jpeg \
             --with-freetype; \
+    else \
+        docker-php-ext-configure gd \
+            --prefix=/usr \
+            --with-jpeg-dir \
+            --with-freetype-dir; \
+    fi && \
     docker-php-ext-install gd; \
     php -r 'var_dump(gd_info());'
