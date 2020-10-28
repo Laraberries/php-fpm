@@ -1,4 +1,4 @@
-name: Docker Image CI Unstable
+name: Unstable
 
 on:
     push:
