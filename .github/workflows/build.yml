@@ -82,6 +82,8 @@ jobs:
 
             -   name: Set up Docker Buildx
                 uses: docker/setup-buildx-action@v1
+                with:
+                    version: latest
 
             -   name: Docker Buildx (build latest)
                 if: success() && matrix.php_version == 'latest'
