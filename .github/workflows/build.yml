@@ -27,6 +27,9 @@ jobs:
                     version: latest
                     install: true
 
+            -   name: Available platforms
+                run: echo ${{ steps.buildx.outputs.platforms }}
+
             -   name: Get the version
                 id: get_version
                 run: |
