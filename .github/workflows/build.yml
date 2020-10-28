@@ -36,7 +36,7 @@ jobs:
             -   name: Prepare
                 id: prepare
                 env:
-                    PHP_VERSION: ${{ matrix.php_version }}${{ steps.get_version.outputs.suffix }}
+                    PHP_VERSION: ${{ matrix.php_version }}
                 run: |
                     DOCKER_IMAGE=${GITHUB_REPOSITORY,,}
                     DOCKER_PLATFORMS=linux/amd64,linux/arm,linux/arm64
@@ -59,21 +59,21 @@ jobs:
 
                     echo ::set-output name=buildx_args_major::--platform ${DOCKER_PLATFORMS} \
                         --build-arg VERSION=${{ steps.get_version.outputs.prefix }}-${MAJOR_VERSION} \
-                        --build-arg PHP_VERSION=${MAJOR_VERSION}-fpm \
+                        --build-arg PHP_VERSION=${MAJOR_VERSION}${{ steps.get_version.outputs.suffix }} \
                         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg VCS_REF=${GITHUB_SHA::8} \
                         --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.prefix }}-${MAJOR_VERSION}" .
 
                     echo ::set-output name=buildx_args_minor::--platform ${DOCKER_PLATFORMS} \
                         --build-arg VERSION=${{ steps.get_version.outputs.prefix }}-${MINOR_VERSION} \
-                        --build-arg PHP_VERSION=${MINOR_VERSION}-fpm \
+                        --build-arg PHP_VERSION=${MINOR_VERSION}${{ steps.get_version.outputs.suffix }} \
                         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg VCS_REF=${GITHUB_SHA::8} \
                         --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.prefix }}-${MINOR_VERSION}" .
 
                     echo ::set-output name=buildx_args_patch::--platform ${DOCKER_PLATFORMS} \
                         --build-arg VERSION=${{ steps.get_version.outputs.prefix }}-${PATCH_VERSION} \
-                        --build-arg PHP_VERSION=${PATCH_VERSION}-fpm \
+                        --build-arg PHP_VERSION=${PATCH_VERSION}${{ steps.get_version.outputs.suffix }} \
                         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg VCS_REF=${GITHUB_SHA::8} \
                         --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.prefix }}-${PATCH_VERSION}" .
