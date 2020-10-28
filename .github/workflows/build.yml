@@ -26,7 +26,6 @@ jobs:
                 with:
                     version: latest
                     install: true
-                    platforms: linux/amd64,linux/arm,linux/arm64
 
             -   name: Get the version
                 id: get_version
