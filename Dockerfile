@@ -37,7 +37,7 @@ RUN set -eux; \
             libssl-dev \
             libmcrypt-dev;
 
-RUN if [ ${PHP_VERSION} = "7.4-fpm" ]; then \
+RUN if [ ${PHP_VERSION} = "7.4-fpm" || ${PHP_VERSION} = "latest" ]; then \
         apt-get install -y --no-install-recommends libonig-dev \
     ;fi
 
