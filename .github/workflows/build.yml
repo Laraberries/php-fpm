@@ -26,7 +26,6 @@ jobs:
                 with:
                     version: latest
                     install: true
-                outputs:
                     platforms: all
 
             -   name: Available platforms
