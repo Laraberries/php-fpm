@@ -26,10 +26,8 @@ jobs:
                 with:
                     version: latest
                     install: true
-                    platforms: all
-
-            -   name: Available platforms
-                run: echo ${{ steps.buildx.outputs.platforms }}
+                run: |
+                    echo ::set-output name=platforms::linux/amd64,linux/arm,linux/arm64,linux/386
 
             -   name: Get the version
                 id: get_version
