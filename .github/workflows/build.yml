@@ -19,16 +19,11 @@ jobs:
                 id: get_version
                 run: |
                     PREFIX=edge
-                    SUFFIX=""
-                    TAG=""
+                    SUFFIX="-fpm"
 
-                    if [[ ${{ matrix.php_version }} != "latest" ]]; then
-                        SUFFIX="-fpm"
-                    fi
-
-                    if [[ $GITHUB_REF == refs/tags/* ]]; then
+                    if [[ ${{ matrix.php_version }} == "latest" ]]; then
                         PREFIX=latest
-                        TAG=${GITHUB_REF/refs\/tags\/v}
+                        SUFFIX=""
                     fi
 
                     echo ::set-output name=prefix::${PREFIX}
@@ -50,21 +45,24 @@ jobs:
 
                     echo ::set-output name=buildx_args_latest::--platform ${DOCKER_PLATFORMS} \
                         --build-arg VERSION=${{ steps.get_version.outputs.prefix }} \
-                        --build-arg PHP_VERSION=latest \
+                        --build-arg MINOR_PHP_VERSION=latest \
+                        --build-arg FULL_PHP_VERSION=latest \
                         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg VCS_REF=${GITHUB_SHA::8} \
                         --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.prefix }}" .
 
                     echo ::set-output name=buildx_args_minor::--platform ${DOCKER_PLATFORMS} \
                         --build-arg VERSION=${{ steps.get_version.outputs.prefix }}-${MINOR_VERSION} \
-                        --build-arg PHP_VERSION=${MINOR_VERSION}${{ steps.get_version.outputs.suffix }} \
+                        --build-arg MINOR_PHP_VERSION=${MINOR_VERSION} \
+                        --build-arg FULL_PHP_VERSION=${MINOR_VERSION}${{ steps.get_version.outputs.suffix }} \
                         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg VCS_REF=${GITHUB_SHA::8} \
                         --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.prefix }}-${MINOR_VERSION}" .
 
                     echo ::set-output name=buildx_args_patch::--platform ${DOCKER_PLATFORMS} \
                         --build-arg VERSION=${{ steps.get_version.outputs.prefix }}-${PATCH_VERSION} \
-                        --build-arg PHP_VERSION=${PATCH_VERSION}${{ steps.get_version.outputs.suffix }} \
+                        --build-arg MINOR_PHP_VERSION=${MINOR_VERSION} \
+                        --build-arg FULL_PHP_VERSION=${PATCH_VERSION}${{ steps.get_version.outputs.suffix }} \
                         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg VCS_REF=${GITHUB_SHA::8} \
                         --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.prefix }}-${PATCH_VERSION}" .
