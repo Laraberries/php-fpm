@@ -1,10 +1,10 @@
 name: Docker Build
 
 on:
+    schedule:
+        - cron: 0 0 * * *
     push:
         branches: helldar
-        schedule:
-            - cron: 0 0 * * *
         tags:
             - v*
 
