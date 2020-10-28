@@ -26,8 +26,6 @@ jobs:
                 with:
                     version: latest
                     install: true
-                run: |
-                    echo ::set-output name=platforms::linux/amd64,linux/arm,linux/arm64,linux/386
 
             -   name: Get the version
                 id: get_version
@@ -55,6 +53,8 @@ jobs:
                     MINOR_PHP_VERSION: ${{ steps.get_version.outputs.minor_version }}
                     FULL_PHP_VERSION: ${{ steps.get_version.outputs.full_version }}
                 run: |
+                    PLATFORMS=linux/amd64,linux/arm,linux/arm64,linux/386
+
                     DOCKER_IMAGE=${GITHUB_REPOSITORY,,}
 
                     MINOR_VERSION=${MINOR_PHP_VERSION}
@@ -64,7 +64,7 @@ jobs:
                     echo ::set-output name=minor_version::${MINOR_VERSION}
                     echo ::set-output name=patch_version::${PATCH_VERSION}
 
-                    echo ::set-output name=buildx_args_latest::--platform ${{ steps.buildx.outputs.platforms }} \
+                    echo ::set-output name=buildx_args_latest::--platform ${PLATFORMS} \
                         --build-arg VERSION=${{ steps.get_version.outputs.prefix }} \
                         --build-arg MINOR_PHP_VERSION=latest \
                         --build-arg FULL_PHP_VERSION=latest \
@@ -72,7 +72,7 @@ jobs:
                         --build-arg VCS_REF=${GITHUB_SHA::8} \
                         --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.prefix }}" .
 
-                    echo ::set-output name=buildx_args_minor::--platform ${{ steps.buildx.outputs.platforms }} \
+                    echo ::set-output name=buildx_args_minor::--platform ${PLATFORMS} \
                         --build-arg VERSION=${{ steps.get_version.outputs.prefix }}-${MINOR_VERSION} \
                         --build-arg MINOR_PHP_VERSION=${MINOR_VERSION} \
                         --build-arg FULL_PHP_VERSION=${MINOR_VERSION}${{ steps.get_version.outputs.suffix }} \
@@ -80,7 +80,7 @@ jobs:
                         --build-arg VCS_REF=${GITHUB_SHA::8} \
                         --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.prefix }}-${MINOR_VERSION}" .
 
-                    echo ::set-output name=buildx_args_patch::--platform ${{ steps.buildx.outputs.platforms }} \
+                    echo ::set-output name=buildx_args_patch::--platform ${PLATFORMS} \
                         --build-arg VERSION=${{ steps.get_version.outputs.prefix }}-${PATCH_VERSION} \
                         --build-arg MINOR_PHP_VERSION=${MINOR_VERSION} \
                         --build-arg FULL_PHP_VERSION=${PATCH_VERSION}${{ steps.get_version.outputs.suffix }} \
