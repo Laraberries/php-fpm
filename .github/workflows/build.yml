@@ -3,6 +3,8 @@ name: Docker Build
 on:
     push:
         branches: helldar
+        schedule:
+            - cron: 0 0 * * *
         tags:
             - v*
 
