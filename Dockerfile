@@ -37,7 +37,7 @@ RUN set -eux; \
             libssl-dev \
             libmcrypt-dev;
 
-RUN if [[ ${PHP_VERSION} == 7.4-fpm || ${PHP_VERSION} == latest ]]; then \
+RUN if [[ "${PHP_VERSION}" == "7.4-fpm" || "${PHP_VERSION}" == "latest" ]]; then \
         apt-get install -y --no-install-recommends libonig-dev \
     ;fi
 
@@ -49,7 +49,7 @@ RUN set -eux; \
     # Install the PHP pdo_pgsql extention
     docker-php-ext-install pdo_pgsql && \
     # Install the PHP gd library
-    if [[ ${PHP_VERSION} == 7.4-fpm || ${PHP_VERSION} == latest ]]; then \
+    if [[ "${PHP_VERSION}" == "7.4-fpm" || "${PHP_VERSION}" == "latest" ]]; then \
         docker-php-ext-configure gd \
             --prefix=/usr \
             --with-jpeg \
