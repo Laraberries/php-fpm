@@ -9,12 +9,15 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+
         strategy:
             matrix:
                 php_version: [ 7.2.34, 7.3.23, 7.4.11, latest ]
+
         steps:
             -   name: Checkout
                 uses: actions/checkout@v2
+
             -   name: Get the version
                 id: get_version
                 run: |
@@ -34,6 +37,7 @@ jobs:
                     echo ::set-output name=suffix::${SUFFIX}
                     echo ::set-output name=minor_version::${VERSION:0:3}
                     echo ::set-output name=full_version::${VERSION}
+
             -   name: Prepare
                 id: prepare
                 env:
@@ -73,38 +77,49 @@ jobs:
                         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg VCS_REF=${GITHUB_SHA::8} \
                         --tag "${DOCKER_IMAGE}:${{ steps.get_version.outputs.prefix }}-${PATCH_VERSION}" .
+
             -   name: Set up Docker Buildx
                 uses: crazy-max/ghaction-docker-buildx@v3
+
             -   name: Docker Buildx (build latest)
                 if: success() && matrix.php_version == 'latest'
                 run: docker buildx build --output "type=image,push=false,name=${{ steps.get_version.outputs.prefix }}" ${{ steps.prepare.outputs.buildx_args_latest }}
+
             -   name: Docker Buildx (build minor tag)
                 if: success() && matrix.php_version != 'latest'
                 run: docker buildx build --output "type=image,push=false,name=${{ steps.get_version.outputs.prefix }}-${{ steps.prepare.outputs.minor_version }}" ${{ steps.prepare.outputs.buildx_args_minor }}
+
             -   name: Docker Buildx (build patch tag)
                 if: success() && matrix.php_version != 'latest'
                 run: docker buildx build --output "type=image,push=false,name=${{ steps.get_version.outputs.prefix }}-${{ steps.prepare.outputs.patch_version }}" ${{ steps.prepare.outputs.buildx_args_patch }}
+
             -   name: Login to DockerHub
                 if: success()
                 uses: docker/login-action@v1
                 with:
                     username: ${{ secrets.DOCKER_HUB_USER }}
                     password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
             -   name: Docker Buildx (push latest)
                 if: success() && matrix.php_version == 'latest'
                 run: docker buildx build --output "type=image,push=true,name=${{ steps.get_version.outputs.prefix }}" ${{ steps.prepare.outputs.buildx_args_latest }}
+
             -   name: Docker Buildx (push minor tag)
                 if: success() && matrix.php_version != 'latest'
                 run: docker buildx build --output "type=image,push=true,name=${{ steps.get_version.outputs.prefix }}-${{ steps.prepare.outputs.minor_version }}" ${{ steps.prepare.outputs.buildx_args_minor }}
+
             -   name: Docker Buildx (push patch tag)
                 if: success() && matrix.php_version != 'latest'
                 run: docker buildx build --output "type=image,push=true,name=${{ steps.get_version.outputs.prefix }}-${{ steps.prepare.outputs.patch_version }}" ${{ steps.prepare.outputs.buildx_args_patch }}
+
             -   name: Inspect latest image
                 if: success() && matrix.php_version == 'latest'
                 run: docker buildx imagetools inspect ${{ steps.prepare.outputs.docker_image }}:${{ steps.get_version.outputs.prefix }}
+
             -   name: Inspect minor tag image
                 if: success() && matrix.php_version != 'latest'
                 run: docker buildx imagetools inspect ${{ steps.prepare.outputs.docker_image }}:${{ steps.get_version.outputs.prefix }}-${{ steps.prepare.outputs.minor_version }}
+
             -   name: Inspect patch tag image
                 if: success() && matrix.php_version != 'latest'
                 run: docker buildx imagetools inspect ${{ steps.prepare.outputs.docker_image }}:${{ steps.get_version.outputs.prefix }}-${{ steps.prepare.outputs.patch_version }}
