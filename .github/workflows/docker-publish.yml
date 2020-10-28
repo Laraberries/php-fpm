@@ -31,7 +31,7 @@ jobs:
             -   name: Prepare
                 id: prepare
                 env:
-                    PHP_VERSION: ${{ matrix.php_version }}
+                    PHP_VERSION: ${{ matrix.php_version }}-fpm
                 run: |
                     DOCKER_IMAGE=${GITHUB_REPOSITORY,,}
                     DOCKER_PLATFORMS=linux/amd64,linux/arm,linux/arm64
@@ -41,7 +41,7 @@ jobs:
                     echo ::set-output name=version::${VERSION}
 
                     echo ::set-output name=buildx_args_latest::--platform ${DOCKER_PLATFORMS} \
-                        --build-arg VERSION=${{ steps.get_version.outputs.prefix }}${VERSION} \
+                        --build-arg VERSION=${{ steps.get_version.outputs.prefix }}${VERSION}-fpm \
                         --build-arg PHP_VERSION=${VERSION} \
                         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg VCS_REF=${GITHUB_SHA::8} \

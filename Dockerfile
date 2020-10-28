@@ -4,14 +4,14 @@
 #--------------------------------------------------------------------------
 #
 
-ARG PHP_VERSION=7.4
+ARG PHP_VERSION=7.4-fpm
 
-FROM php:${PHP_VERSION}-fpm
+FROM php:${PHP_VERSION}
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
 
-ARG PHP_VERSION=7.4
+ARG PHP_VERSION=7.4-fpm
 
 #
 #--------------------------------------------------------------------------
@@ -37,7 +37,7 @@ RUN set -eux; \
             libssl-dev \
             libmcrypt-dev;
 
-RUN if [ ${PHP_VERSION} = "7.4" ]; then \
+RUN if [ ${PHP_VERSION} = "7.4-fpm" ]; then \
         apt-get install -y --no-install-recommends libonig-dev \
     ;fi
 
@@ -49,7 +49,7 @@ RUN set -eux; \
     # Install the PHP pdo_pgsql extention
     docker-php-ext-install pdo_pgsql && \
     # Install the PHP gd library
-    if [ ${PHP_VERSION} = "7.4" ]; then \
+    if [ ${PHP_VERSION} = "7.4-fpm" ]; then \
         docker-php-ext-configure gd \
             --prefix=/usr \
             --with-jpeg \
