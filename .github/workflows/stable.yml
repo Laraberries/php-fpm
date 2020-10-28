@@ -38,7 +38,7 @@ jobs:
                     VERSION=${PHP_VERSION:0:1}.${PHP_VERSION:2:1}-fpm
 
                     echo ::set-output name=docker_image::${DOCKER_IMAGE}
-                    echo ::set-output name=version::${VERSION}
+                    echo ::set-output name=version::${PHP_VERSION:0:1}.${PHP_VERSION:2:1}
 
                     echo ::set-output name=buildx_args_latest::--platform ${DOCKER_PLATFORMS} \
                         --build-arg VERSION=${{ steps.get_version.outputs.prefix }}${VERSION} \
