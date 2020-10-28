@@ -1,4 +1,4 @@
-name: Docker Image CI Stable
+name: Stable
 
 on:
     push:
