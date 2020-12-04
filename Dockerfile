@@ -4,16 +4,16 @@
 #--------------------------------------------------------------------------
 #
 
-ARG MINOR_PHP_VERSION=7.4
-ARG FULL_PHP_VERSION=7.4-fpm
+ARG MINOR_PHP_VERSION=8.0
+ARG FULL_PHP_VERSION=8.0-fpm
 
 FROM php:${FULL_PHP_VERSION}
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
 
-ARG MINOR_PHP_VERSION=7.4
-ARG FULL_PHP_VERSION=7.4-fpm
+ARG MINOR_PHP_VERSION=8.0
+ARG FULL_PHP_VERSION=8.0-fpm
 
 #
 #--------------------------------------------------------------------------
@@ -39,7 +39,7 @@ RUN set -eux; \
             libssl-dev \
             libmcrypt-dev;
 
-RUN if [ $MINOR_PHP_VERSION = "7.4" ] || [ $FULL_PHP_VERSION = "latest" ]; then \
+RUN if [ $MINOR_PHP_VERSION = "7.4" ] || [ $MINOR_PHP_VERSION = "8.0" ] || [ $FULL_PHP_VERSION = "latest" ]; then \
         apt-get install -y --no-install-recommends libonig-dev \
     ;fi
 
@@ -51,7 +51,7 @@ RUN set -eux; \
     # Install the PHP pdo_pgsql extention
     docker-php-ext-install pdo_pgsql && \
     # Install the PHP gd library
-    if [ $MINOR_PHP_VERSION = "7.4" ] || [ $FULL_PHP_VERSION = "latest" ]; then \
+    if [ $MINOR_PHP_VERSION = "7.4" ] || [ $MINOR_PHP_VERSION = "8.0" ] || [ $FULL_PHP_VERSION = "latest" ]; then \
         docker-php-ext-configure gd \
             --prefix=/usr \
             --with-jpeg \
