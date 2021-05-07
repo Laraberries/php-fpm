@@ -1,6 +1,6 @@
 # Laradock's PHP-FPM ARM Base Image
 
-![build](https://github.com/Laraberries/php-fpm/workflows/Docker%20Build/badge.svg)
+[![Docker Build](https://github.com/Laraberries/php-fpm/actions/workflows/build.yml/badge.svg)](https://github.com/Laraberries/php-fpm/actions/workflows/build.yml)
 
 [PHP-FPM Docker Hub Repository](https://hub.docker.com/r/laraberries/php-fpm)
 
